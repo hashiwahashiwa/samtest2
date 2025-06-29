@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">つかえる残高</string>
+    <string name="assets_title">資産一覧</string>
+    <string name="expenses_title">支出予定一覧</string>
+    <string name="add_item">＋行を追加</string>
+    <string name="total_assets">資産合計：</string>
+    <string name="total_expenses">支出合計：</string>
+    <string name="remaining_balance">残金：</string>
+    <string name="yen">円</string>
+    <string name="item_name">項目</string>
+    <string name="amount">金額</string>
+    <string name="delete">削除</string>
+</resources>
