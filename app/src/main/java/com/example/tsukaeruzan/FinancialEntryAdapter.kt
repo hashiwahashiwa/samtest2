@@ -18,6 +18,9 @@ class FinancialEntryAdapter(
         val etItemName: EditText = view.findViewById(R.id.etItemName)
         val etAmount: EditText = view.findViewById(R.id.etAmount)
         val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
+        
+        var nameWatcher: TextWatcher? = null
+        var amountWatcher: TextWatcher? = null
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -29,47 +32,50 @@ class FinancialEntryAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val entry = entries[position]
 
+        // Remove existing TextWatchers to prevent issues with view recycling
+        holder.nameWatcher?.let { holder.etItemName.removeTextChangedListener(it) }
+        holder.amountWatcher?.let { holder.etAmount.removeTextChangedListener(it) }
+
+        // Set the text values
         holder.etItemName.setText(entry.name)
         holder.etAmount.setText(if (entry.amount == 0) "" else entry.amount.toString())
 
-        holder.etItemName.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                entry.name = holder.etItemName.text.toString()
-                onDataChanged()
-            }
-        }
-
-        holder.etAmount.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val amountText = holder.etAmount.text.toString()
-                entry.amount = amountText.toIntOrNull() ?: 0
-                onDataChanged()
-            }
-        }
-
-        holder.etItemName.addTextChangedListener(object : TextWatcher {
+        // Create and set new TextWatchers
+        holder.nameWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                entry.name = s.toString()
-                onDataChanged()
+                val currentPosition = holder.adapterPosition
+                if (currentPosition != RecyclerView.NO_POSITION && currentPosition < entries.size) {
+                    entries[currentPosition].name = s.toString()
+                    onDataChanged()
+                }
             }
-        })
+        }
 
-        holder.etAmount.addTextChangedListener(object : TextWatcher {
+        holder.amountWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                entry.amount = s.toString().toIntOrNull() ?: 0
-                onDataChanged()
+                val currentPosition = holder.adapterPosition
+                if (currentPosition != RecyclerView.NO_POSITION && currentPosition < entries.size) {
+                    entries[currentPosition].amount = s.toString().toIntOrNull() ?: 0
+                    onDataChanged()
+                }
             }
-        })
+        }
+
+        holder.etItemName.addTextChangedListener(holder.nameWatcher)
+        holder.etAmount.addTextChangedListener(holder.amountWatcher)
 
         holder.btnDelete.setOnClickListener {
-            entries.removeAt(holder.adapterPosition)
-            notifyItemRemoved(holder.adapterPosition)
-            notifyItemRangeChanged(holder.adapterPosition, entries.size)
-            onDataChanged()
+            val currentPosition = holder.adapterPosition
+            if (currentPosition != RecyclerView.NO_POSITION && currentPosition < entries.size) {
+                entries.removeAt(currentPosition)
+                notifyItemRemoved(currentPosition)
+                notifyItemRangeChanged(currentPosition, entries.size)
+                onDataChanged()
+            }
         }
     }
 
